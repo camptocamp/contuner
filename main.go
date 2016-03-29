@@ -15,8 +15,10 @@ func main() {
     confdir = "/etc/contuner/conf.d"
   }
 
-  envMap, _ := envToMap()
-  // TODO: err
+  envMap, err := envToMap()
+  if err != nil {
+    logrus.Errorf("Failed to parse environment: %v", err)
+  }
 
   // Create a new template and parse the letter into it.
   t, err := template.ParseGlob(confdir+"/*.tmpl")

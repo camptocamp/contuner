@@ -5,6 +5,7 @@ import (
   "text/template"
   "strings"
   "bytes"
+  "path/filepath"
   "github.com/Sirupsen/logrus"
   //"honnef.co/go/augeas"
 )
@@ -20,25 +21,17 @@ func main() {
     logrus.Errorf("Failed to parse environment: %v", err)
   }
 
-  // Create a new template and parse the letter into it.
-  t, err := template.ParseGlob(confdir+"/*")
+  tmpls, err := filepath.Glob(confdir+"/*")
   if err != nil {
-    logrus.Errorf("Failed to initialize template: %v", err)
-    return
+    logrus.Errorf("Failed to list templates: %v", err)
   }
 
-  var augCode bytes.Buffer
-  err = t.Execute(&augCode, envMap)
-  if err != nil {
-    logrus.Errorf("Failed to execute template: %v", err)
+  for _, tmpl := range tmpls {
+    err = executeTemplate(tmpl, envMap)
+    if err != nil {
+      logrus.Errorf("Failed to execute template %v: %v", tmpl, err)
+    }
   }
-
-  logrus.Infof("Code is:\n%v", augCode.String())
-
-  //aug, _ := augeas.New("/", "", augeas.None)
-  // TODO: err
-
-  //aug.Srun
 }
 
 func envToMap() (map[string]string, error) {
@@ -51,4 +44,29 @@ func envToMap() (map[string]string, error) {
   }
 
   return envMap, err
+}
+
+func executeTemplate(tmpl string, envMap map[string]string) (error) {
+  var err error
+
+
+  t, err := template.ParseFiles(tmpl)
+  if err != nil {
+    return err
+  }
+
+  var augCode bytes.Buffer
+  err = t.Execute(&augCode, envMap)
+  if err != nil {
+    return err
+  }
+
+  logrus.Infof("Code is:\n%v", augCode.String())
+
+  //aug, _ := augeas.New("/", "", augeas.None)
+  // TODO: err
+
+  //aug.Srun
+
+  return err
 }

@@ -21,7 +21,7 @@ func main() {
   }
 
   // Create a new template and parse the letter into it.
-  t, err := template.ParseGlob(confdir+"/*.tmpl")
+  t, err := template.ParseGlob(confdir+"/*")
   if err != nil {
     logrus.Errorf("Failed to initialize template: %v", err)
     return
